@@ -1,0 +1,11 @@
+repositories{
+  jcenter()
+}
+
+dependencies {
+   compile 'com.commit451:PhotoView:1.2.4'
+}
+
+android {
+
+}
