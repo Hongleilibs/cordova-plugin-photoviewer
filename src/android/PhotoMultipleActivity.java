@@ -52,7 +52,7 @@ public class PhotoMultipleActivity extends Activity {
     private int current_position = 0;
     CustomPagerAdapter mCustomPagerAdapter;
     private Handler handler;
-    private boolean share;
+    private boolean share = false;
     List<Bitmap> bitmapList = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +73,9 @@ public class PhotoMultipleActivity extends Activity {
         });
         try {
             options = new JSONObject(this.getIntent().getStringExtra("options"));
-            share = options.getBoolean( "share" );
+            if( options.has( "share" )){
+                share = options.getBoolean( "share" );
+            }
             current_position = Integer.parseInt(this.getIntent().getStringExtra("title"));
             jsonArray = options.optJSONArray("img_array");
             Log.e("PhotoMulitple", "jsonArray----" + jsonArray);
