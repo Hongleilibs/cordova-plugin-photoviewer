@@ -1,17 +1,5 @@
 var exec = require('cordova/exec');
 
-exports.show = function(url, title, options) {
-    if( title == undefined ) {
-      title = '';
-    }
-
-    if(typeof options == "undefined"){
-        options = {};
-    }
-
-    exec(function(){}, function(){}, "PhotoViewer", "show", [url, title, options]);
-};
-
 exports.showMultiple = function(urlWithTitles, position, options) {
 	if(typeof options == "undefined"){
         options = {};

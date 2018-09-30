@@ -6,21 +6,13 @@
     android:background="@android:color/black"
     android:gravity="center"
     android:orientation="horizontal">
-
-    <android.support.v4.view.ViewPager
+    <com.sarriaroman.PhotoViewer.ViewPagerFixed
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="10dp" />
+        android:padding="10dp"
+    />
 
-    <!--<pl.droidsonroids.gif.GifImageView-->
-        <!--android:id="@+id/activity_gif_giv"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_alignParentTop="true"-->
-        <!--android:padding="165dp"-->
-        <!--android:src="@drawable/log" />-->
     <ProgressBar
         android:id="@+id/progressBar1"
         android:layout_width="wrap_content"

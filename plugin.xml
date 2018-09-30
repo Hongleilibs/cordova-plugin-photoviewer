@@ -25,7 +25,7 @@
 		</config-file>
 
  		<source-file src="src/android/PhotoViewer.java" target-dir="src/com/sarriaroman/PhotoViewer" />
-<!-- 		<source-file src="src/android/PhotoActivity.java" target-dir="src/com/sarriaroman/PhotoViewer" />-->
+ 		<source-file src="src/android/ViewPagerFixed.java" target-dir="src/com/sarriaroman/PhotoViewer" />
 	    <source-file src="src/android/PhotoMultipleActivity.java" target-dir="src/com/sarriaroman/PhotoViewer" />
 		<source-file src="src/android/layout/activity_photo.xml" target-dir="res/layout" />
 		<source-file src="src/android/activity_multiple_photo.xml" target-dir="res/layout" />
