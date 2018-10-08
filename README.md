@@ -25,9 +25,6 @@ npm install --save @ionic-native/photo-viewer
 
 #### Show an image
 
-```
-PhotoViewer.show('http://my_site.com/my_image.jpg', 'Optional Title');
-```
 
 Optionally you can pass third parameter which can be used to hide the share button [ONLY FOR ANDROID]
 
