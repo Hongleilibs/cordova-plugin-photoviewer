@@ -24,8 +24,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.cordova.demotest.R;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,6 +52,7 @@ public class PhotoMultipleActivity extends Activity {
     private Handler handler;
     private boolean share = false;
     List<Bitmap> bitmapList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,10 +60,10 @@ public class PhotoMultipleActivity extends Activity {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
+        setContentView( getApplication().getResources().getIdentifier("activity_multiple_photo", "layout", getApplication().getPackageName()));
+        closeBtn =  (ImageButton) findViewById(getApplication().getResources().getIdentifier("closeBtn", "id", getApplication().getPackageName()));
+        shareBtn =  (ImageButton) findViewById(getApplication().getResources().getIdentifier("shareBtn", "id", getApplication().getPackageName()));
 
-        setContentView( R.layout.activity_multiple_photo);
-        closeBtn = (ImageButton) findViewById(R.id.closeBtn);
-        shareBtn = (ImageButton) findViewById(R.id.shareBtn);
         closeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,7 +80,7 @@ public class PhotoMultipleActivity extends Activity {
             Log.e("PhotoMulitple", "jsonArray----" + jsonArray);
         } catch (JSONException exception) {
         }
-        ImageButton shareBtn = (ImageButton) findViewById(R.id.shareBtn);
+
         if (share == false){
             shareBtn.setVisibility( View.GONE );
         }
@@ -92,7 +91,7 @@ public class PhotoMultipleActivity extends Activity {
             public void handleMessage(Message msg) {
             super.handleMessage(msg);
                 // 取消掉"加载中"的框框
-                ProgressBar gifImageView1 = (ProgressBar) findViewById(R.id.progressBar1);
+                ProgressBar gifImageView1 = (ProgressBar) findViewById(getApplication().getResources().getIdentifier("progressBar1", "id", getApplication().getPackageName()));
                 gifImageView1.setVisibility( View.GONE );
                 //更新TextView UI
                 findViews();
@@ -126,7 +125,8 @@ public class PhotoMultipleActivity extends Activity {
      */
     private void findViews(View itemView) {
         // Photo Container
-        photo = (ImageView) itemView.findViewById(R.id.photoView);
+        photo = (ImageView) itemView.findViewById(getApplication().getResources().getIdentifier("photoView", "id", getApplication().getPackageName()));
+
         mAttacher = new PhotoViewAttacher(photo);
 
         // Title TextView
@@ -197,7 +197,7 @@ public class PhotoMultipleActivity extends Activity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             View itemView = mLayoutInflater.inflate(
-                    R.layout.activity_photo,
+                    getApplication().getResources().getIdentifier("activity_photo", "layout", getApplication().getPackageName()),
                     container, false);
             findViews(itemView);
             Log.e("PhotoMulitple", "instantiateItem----");
