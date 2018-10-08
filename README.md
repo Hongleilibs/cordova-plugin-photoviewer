@@ -31,7 +31,7 @@ Optionally you can pass third parameter which can be used to hide the share butt
 ##### Usage
 
 ```
-PhotoViewer.show('title':'http://my_site.com/my_image.jpg', 'Optional Title', {share:false});
+PhotoViewer.showMultiple('title':'http://my_site.com/my_image.jpg', 'Optional Title', {share:false});
 ```
 
 ### Versions  
