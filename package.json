@@ -1,11 +1,19 @@
 {
-  "name": "photoviewer",
+  "name": "cordova-plugin-photoviewer",
   "version": "1.0.0",
-  "description": "",
+  "description": "> This plugin is intended to show a picture from an URL into a Photo Viewer with zoom features.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hongleilibs/cordova-plugin-photoviewer.git"
+  },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hongleilibs/cordova-plugin-photoviewer/issues"
+  },
+  "homepage": "https://github.com/Hongleilibs/cordova-plugin-photoviewer#readme"
 }

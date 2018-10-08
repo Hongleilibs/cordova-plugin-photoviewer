@@ -1,4 +1,4 @@
-package com.sarriaroman.PhotoViewer;
+package com.Hongleilibs.PhotoViewer;
 
 import android.app.Activity;
 import android.content.Context;
