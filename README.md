@@ -3,16 +3,6 @@
 
 ## How to Install
 
-Cordova:
-```bash
-cordova plugin add com-Hongleilibs-photoviewer
-```
-
-Ionic 2:
-```bash
-ionic plugin add --save com-Hongleilibs-photoviewer
-npm install --save @ionic-native/photo-viewer
-```
 
 ### Android
 > Out of the box
