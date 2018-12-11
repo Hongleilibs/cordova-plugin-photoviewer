@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
@@ -47,12 +48,13 @@ public class PhotoMultipleActivity extends Activity {
     private TextView titleTxt;
     private JSONObject options;
     private JSONArray jsonArray;
-    private int current_position = 0;
+    private static int current_position = 0;
     CustomPagerAdapter mCustomPagerAdapter;
+    private Thread thread;
     private Handler handler;
     private boolean share = false;
-    List<Bitmap> bitmapList = new ArrayList<>();
-
+    HashMap<String,Bitmap> bitmapList = new HashMap<String,Bitmap>();
+    List<Boolean> positile = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,27 +91,33 @@ public class PhotoMultipleActivity extends Activity {
             @Override
             //收到消息时该做的事情
             public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+                super.handleMessage(msg);
                 // 取消掉"加载中"的框框
                 ProgressBar gifImageView1 = (ProgressBar) findViewById(getApplication().getResources().getIdentifier("progressBar1", "id", getApplication().getPackageName()));
                 gifImageView1.setVisibility( View.GONE );
                 //更新TextView UI
                 findViews();
+            }
+        };
+        for(int i = 0 ; i < jsonArray.length() ; i++) {
+            positile.add( false );
         }
-    };
-
-        new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 //访问网络
                 if (jsonArray != null && jsonArray.length() > 0) {
                     for(int i = 0 ; i < jsonArray.length() ; i++){
-                        final String imageUrl = jsonArray.optJSONObject(i).optString("url");
-                        System.out.println("url: "+imageUrl);
-                        Bitmap bitmap = getImageBitmap(imageUrl);
-                        if (null == bitmap) {
-                            Toast.makeText(getActivity(), "图片加载失败", Toast.LENGTH_LONG).show();
-                            finish();
+
+                        if (i > current_position - 2 && i < current_position + 2 && positile.get( i ) == false){
+                            positile.set( i,true );
+                            final String imageUrl = jsonArray.optJSONObject(i).optString("url");
+                            System.out.println("url: "+imageUrl);
+                            Bitmap bitmap = getImageBitmap(String.valueOf( i ),imageUrl);
+                            if (null == bitmap) {
+                                Toast.makeText(getActivity(), "图片加载失败", Toast.LENGTH_LONG).show();
+                                finish();
+                            }
                         }
                     }
                 }
@@ -117,7 +125,8 @@ public class PhotoMultipleActivity extends Activity {
                 Message ok = new Message();
                 handler.sendMessage(ok);
             }
-        }).start();
+        });
+        thread.start();
     }
 
     /**
@@ -139,6 +148,27 @@ public class PhotoMultipleActivity extends Activity {
             mCustomPagerAdapter = new CustomPagerAdapter(PhotoMultipleActivity.this, getApplication().getResources().getIdentifier("activity_multiple_photo", "layout", getApplication().getPackageName()));
             view_pager.setAdapter(mCustomPagerAdapter);
             view_pager.setCurrentItem(current_position);
+            view_pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                }
+
+                //此方法里的 arg0 是表示显示的第几页，当滑到第N页，就会调用此方法，arg0=N；
+                @Override
+                public void onPageSelected(int arg0) {
+                   if ((arg0 <= current_position - 1 || arg0 >= current_position + 1) && current_position != arg0){
+                       current_position = arg0;
+                       thread.start();
+                   }
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+
+                }
+            });
+
         }
     }
 
@@ -151,7 +181,7 @@ public class PhotoMultipleActivity extends Activity {
         return this;
     }
 
-    public Bitmap getImageBitmap(String url) {
+    public Bitmap getImageBitmap(String index,String url) {
         URL imgUrl = null;
         Bitmap bitmap = null;
         try {
@@ -162,7 +192,7 @@ public class PhotoMultipleActivity extends Activity {
             conn.connect();
             InputStream is = conn.getInputStream();
             bitmap = BitmapFactory.decodeStream(is);
-            bitmapList.add(bitmap);
+            bitmapList.put(index,bitmap);
             is.close();
         } catch (MalformedURLException e) {
             bitmap = null;
@@ -204,9 +234,11 @@ public class PhotoMultipleActivity extends Activity {
             try {
                 Log.e("PhotoMulitple", "position----" + position);
                 if (jsonArray != null && jsonArray.length() > 0) {
-                    Bitmap bitmap =  bitmapList.get(position);
-                    photo.setImageBitmap(bitmap);
-                    photo.setVisibility(View.VISIBLE);
+                    if (positile.get( position )){
+                        Bitmap bitmap =  bitmapList.get(String.valueOf( position ));
+                        photo.setImageBitmap(bitmap);
+                        photo.setVisibility(View.VISIBLE);
+                    }
                     mAttacher.update();
                     String actTitle = jsonArray.optJSONObject(position).optString("title");
                     if (!actTitle.equals("")) {
