@@ -94,6 +94,11 @@ public class PhotoMultipleActivity extends Activity {
                 super.handleMessage(msg);
                 // 取消掉"加载中"的框框
                 ProgressBar gifImageView1 = (ProgressBar) findViewById(getApplication().getResources().getIdentifier("progressBar1", "id", getApplication().getPackageName()));
+                try {
+                    Thread.sleep( 1000 );
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 gifImageView1.setVisibility( View.GONE );
                 //更新TextView UI
                 findViews();
