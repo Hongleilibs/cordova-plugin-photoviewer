@@ -1,4 +1,4 @@
-cordova.define("com-Hongleilibs-photoviewer.PhotoViewer", function(require, exports, module) {
+
 var exec = require('cordova/exec');
 
 exports.showMultiple = function(urlWithTitles, position, options) {
@@ -34,4 +34,3 @@ exports.showMultiple = function(urlWithTitles, position, options) {
 	options.img_array = options.img_array || urlWithTitles;
     exec(function(){}, function(){}, "PhotoViewer", "showMultiple", ["", position, options]);
 }
-});
