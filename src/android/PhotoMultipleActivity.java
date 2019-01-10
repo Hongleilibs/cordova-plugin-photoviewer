@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -37,6 +39,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.cordova.hellocordova.R;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class PhotoMultipleActivity extends Activity {
@@ -111,10 +114,6 @@ public class PhotoMultipleActivity extends Activity {
                         final String imageUrl = jsonArray.optJSONObject(i).optString("url");
                         System.out.println("url: "+imageUrl);
                         Bitmap bitmap = getImageBitmap(imageUrl);
-                        if (null == bitmap) {
-                            Toast.makeText(getActivity(), "图片加载失败", Toast.LENGTH_LONG).show();
-                            finish();
-                        }
                     }
                 }
                 //给Handler发消息
@@ -132,6 +131,7 @@ public class PhotoMultipleActivity extends Activity {
         photo = (ImageView) itemView.findViewById(getApplication().getResources().getIdentifier("photoView", "id", getApplication().getPackageName()));
 
         mAttacher = new PhotoViewAttacher(photo);
+
         //Account TextView
         account = (TextView) itemView.findViewById(getApplication().getResources().getIdentifier("account", "id", getApplication().getPackageName()));
         // Title TextView
@@ -169,11 +169,9 @@ public class PhotoMultipleActivity extends Activity {
             bitmap = BitmapFactory.decodeStream(is);
             bitmapList.add(bitmap);
             is.close();
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             bitmap = null;
-            e.printStackTrace();
-        } catch (IOException e) {
-            bitmap = null;
+            bitmapList.add(bitmap);
             e.printStackTrace();
         }
         return bitmap;
@@ -210,7 +208,13 @@ public class PhotoMultipleActivity extends Activity {
                 Log.e("PhotoMulitple", "position----" + position);
                 if (jsonArray != null && jsonArray.length() > 0) {
                     Bitmap bitmap =  bitmapList.get(position);
-                    photo.setImageBitmap(bitmap);
+                    if (bitmap == null){
+                        Drawable drawable = getResources().getDrawable(R.drawable.image_failed);
+                        BitmapDrawable bmpDraw = (BitmapDrawable)drawable;
+                        bitmap = bmpDraw.getBitmap();
+                        photo.setEnabled( false );
+                    }
+                    photo.setImageBitmap( bitmap );
                     photo.setVisibility(View.VISIBLE);
                     mAttacher.update();
                     String actTitle = jsonArray.optJSONObject(position).optString("title");
