@@ -25,21 +25,17 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.cordova.hellocordova.R;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class PhotoMultipleActivity extends Activity {
@@ -209,7 +205,7 @@ public class PhotoMultipleActivity extends Activity {
                 if (jsonArray != null && jsonArray.length() > 0) {
                     Bitmap bitmap =  bitmapList.get(position);
                     if (bitmap == null){
-                        Drawable drawable = getResources().getDrawable(R.drawable.image_failed);
+                        Drawable drawable = getResources().getDrawable(getApplication().getResources().getIdentifier("image_failed", "drawable", getApplication().getPackageName()));
                         BitmapDrawable bmpDraw = (BitmapDrawable)drawable;
                         bitmap = bmpDraw.getBitmap();
                         photo.setScaleX( 0.4f );
