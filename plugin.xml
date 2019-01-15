@@ -29,7 +29,7 @@
 		<source-file src="src/android/layout/activity_photo.xml" target-dir="res/layout" />
 		<source-file src="src/android/activity_multiple_photo.xml" target-dir="res/layout" />
 		<source-file src="src/android/drawable/ic_chevron_left.png" target-dir="app/src/main/res/drawable-port-hdpi" />
-		<source-file src="src/android/drawable/image_failed.jpg" target-dir="app/src/main/res/drawable-port-hdpi" />
+		<source-file src="src/android/drawable/image_failed.png" target-dir="app/src/main/res/drawable-port-hdpi" />
 		<source-file src="src/android/drawable/ic_dots_horizontal.png" target-dir="app/src/main/res/drawable-port-hdpi" />
 		<framework src="com.android.support:support-v4:23.1.1" />
 		<framework src="com.commit451:PhotoView:1.2.4" />		

@@ -212,6 +212,8 @@ public class PhotoMultipleActivity extends Activity {
                         Drawable drawable = getResources().getDrawable(R.drawable.image_failed);
                         BitmapDrawable bmpDraw = (BitmapDrawable)drawable;
                         bitmap = bmpDraw.getBitmap();
+                        photo.setScaleX( 0.4f );
+                        photo.setScaleY( 0.4f );
                         photo.setEnabled( false );
                     }
                     photo.setImageBitmap( bitmap );
