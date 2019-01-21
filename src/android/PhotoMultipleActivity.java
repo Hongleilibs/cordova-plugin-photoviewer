@@ -90,6 +90,7 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
             TextView title =  (TextView) findViewById(getApplication().getResources().getIdentifier("titleTxt", "id", getApplication().getPackageName()));
             title.setPadding( 0,0,60,0 );
         }
+
         //更新TextView UI
         findViews();
     }
