@@ -2,14 +2,16 @@ package com.Hongleilibs.PhotoViewer;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.os.StrictMode;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
@@ -22,39 +24,38 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
 
-public class PhotoMultipleActivity extends Activity {
+public class PhotoMultipleActivity extends Activity implements OnPageChangeListener {
     private PhotoViewAttacher mAttacher;
     private ImageView photo;
     private ViewPager view_pager;
     private ImageButton closeBtn;
     private ImageButton shareBtn;
     private TextView titleTxt;
+    private TextView account;
+    private ProgressBar progressBar;
     private JSONObject options;
+    private View itemView;
     private JSONArray jsonArray;
-    private static int current_position = 0;
-    CustomPagerAdapter mCustomPagerAdapter;
-    private Thread thread;
-    private Handler handler;
+    private int current_position = 0;
+    private static int select_position = 0;
+    static CustomPagerAdapter mCustomPagerAdapter;
     private boolean share = false;
-    HashMap<String,Bitmap> bitmapList = new HashMap<String,Bitmap>();
-    List<Boolean> positile = new ArrayList<>();
+    List<Bitmap> bitmapList = new ArrayList<>();
+    String TAG = "PhotoMultipleActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,10 +63,11 @@ public class PhotoMultipleActivity extends Activity {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
         }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         setContentView( getApplication().getResources().getIdentifier("activity_multiple_photo", "layout", getApplication().getPackageName()));
         closeBtn =  (ImageButton) findViewById(getApplication().getResources().getIdentifier("closeBtn", "id", getApplication().getPackageName()));
         shareBtn =  (ImageButton) findViewById(getApplication().getResources().getIdentifier("shareBtn", "id", getApplication().getPackageName()));
-
         closeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,48 +87,12 @@ public class PhotoMultipleActivity extends Activity {
 
         if (share == false){
             shareBtn.setVisibility( View.GONE );
+            TextView title =  (TextView) findViewById(getApplication().getResources().getIdentifier("titleTxt", "id", getApplication().getPackageName()));
+            title.setPadding( 0,0,60,0 );
         }
-        //在主线程中实例化Handler　　
-        handler = new Handler() {
-            @Override
-            //收到消息时该做的事情
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                // 取消掉"加载中"的框框
-                ProgressBar gifImageView1 = (ProgressBar) findViewById(getApplication().getResources().getIdentifier("progressBar1", "id", getApplication().getPackageName()));
-                gifImageView1.setVisibility( View.GONE );
-                //更新TextView UI
-                findViews();
-            }
-        };
-        for(int i = 0 ; i < jsonArray.length() ; i++) {
-            positile.add( false );
-        }
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //访问网络
-                if (jsonArray != null && jsonArray.length() > 0) {
-                    for(int i = 0 ; i < jsonArray.length() ; i++){
 
-                        if (i > current_position - 2 && i < current_position + 2 && positile.get( i ) == false){
-                            positile.set( i,true );
-                            final String imageUrl = jsonArray.optJSONObject(i).optString("url");
-                            System.out.println("url: "+imageUrl);
-                            Bitmap bitmap = getImageBitmap(String.valueOf( i ),imageUrl);
-                            if (null == bitmap) {
-                                Toast.makeText(getActivity(), "图片加载失败", Toast.LENGTH_LONG).show();
-                                finish();
-                            }
-                        }
-                    }
-                }
-                //给Handler发消息
-                Message ok = new Message();
-                handler.sendMessage(ok);
-            }
-        });
-        thread.start();
+        //更新TextView UI
+        findViews();
     }
 
     /**
@@ -138,6 +104,9 @@ public class PhotoMultipleActivity extends Activity {
 
         mAttacher = new PhotoViewAttacher(photo);
 
+        progressBar = (ProgressBar) itemView.findViewById(getApplication().getResources().getIdentifier("progressBar1", "id", getApplication().getPackageName()));
+        //Account TextView
+        account = (TextView) itemView.findViewById(getApplication().getResources().getIdentifier("account", "id", getApplication().getPackageName()));
         // Title TextView
         titleTxt = (TextView) itemView.findViewById(getApplication().getResources().getIdentifier("titleTxt", "id", getApplication().getPackageName()));
     }
@@ -147,41 +116,54 @@ public class PhotoMultipleActivity extends Activity {
         if (jsonArray != null && jsonArray.length() > 0) {
             mCustomPagerAdapter = new CustomPagerAdapter(PhotoMultipleActivity.this, getApplication().getResources().getIdentifier("activity_multiple_photo", "layout", getApplication().getPackageName()));
             view_pager.setAdapter(mCustomPagerAdapter);
-            view_pager.setCurrentItem(current_position);
-            view_pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            view_pager.setOnPageChangeListener(this);
+            if(current_position == 0) {
+                onPageSelected( 0 );
+            }else {
+                view_pager.setCurrentItem(current_position);
+            }
 
-                }
+            //把当前位置放在一个可靠的位置，如果从0开始的话，一开始就不能向左滑动了
+        }
+    }
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-                //此方法里的 arg0 是表示显示的第几页，当滑到第N页，就会调用此方法，arg0=N；
-                @Override
-                public void onPageSelected(int arg0) {
-                   if ((arg0 <= current_position - 1 || arg0 >= current_position + 1) && current_position != arg0){
-                       current_position = arg0;
-                       thread.start();
-                   }
-                }
+    }
 
-                @Override
-                public void onPageScrollStateChanged(int state) {
-
-                }
-            });
-
+    //ViewPager翻页结束，页面稳定之后被调用
+    @Override
+    public void onPageSelected(int position) {
+        select_position = position;
+        String actTitle = jsonArray.optJSONObject(position).optString("title");
+        TextView titleTxt =  (TextView) findViewById(getApplication().getResources().getIdentifier("titleTxt", "id", getApplication().getPackageName()));
+        if (!actTitle.equals("")) {
+            Spannable sp = new SpannableString(actTitle);
+            sp.setSpan(new AbsoluteSizeSpan(18,true),0,actTitle.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+            titleTxt.setText(sp);
+        }else {
+            titleTxt.setText("");
+        }
+        account = (TextView) findViewById(getApplication().getResources().getIdentifier("account", "id", getApplication().getPackageName()));
+        String description = jsonArray.optJSONObject(position).optString("description");
+        if (!description.equals("")) {
+            account.setText(description);
+        }else{
+            account.setText("");
         }
     }
 
-    /**
-     * Get the current Activity
-     *
-     * @return
-     */
-    private Activity getActivity() {
-        return this;
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
     }
 
-    public Bitmap getImageBitmap(String index,String url) {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    public Bitmap getImageBitmap(String url) {
         URL imgUrl = null;
         Bitmap bitmap = null;
         try {
@@ -192,26 +174,54 @@ public class PhotoMultipleActivity extends Activity {
             conn.connect();
             InputStream is = conn.getInputStream();
             bitmap = BitmapFactory.decodeStream(is);
-            bitmapList.put(index,bitmap);
+            bitmapList.add(bitmap);
             is.close();
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             bitmap = null;
-            e.printStackTrace();
-        } catch (IOException e) {
-            bitmap = null;
+            bitmapList.add(bitmap);
             e.printStackTrace();
         }
         return bitmap;
     }
 
-
     class CustomPagerAdapter extends PagerAdapter {
         Context mContext;
         LayoutInflater mLayoutInflater;
         int activityPhotoId;
+        private View currentView;
+        private int lastPosition = -1;
+        List<Integer> bitmapList = new ArrayList<>();
+
         public CustomPagerAdapter(Context context, int activityPhotoId) {
             mContext = context;
             mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        @Override
+        public void setPrimaryItem(View container, int position, Object object) {
+            Log.d( TAG, "setPrimaryItem: "+ position );
+            if(lastPosition != position){
+                currentView = (View) object;
+                findViews( currentView );
+                lastPosition = position;
+                bitmapList.add( position );
+                Bitmap bitmap = getImageBitmap(jsonArray.optJSONObject(position).optString("url"));
+                if (bitmap == null){
+                    Drawable drawable = getResources().getDrawable(getApplication().getResources().getIdentifier("image_failed", "drawable", getApplication().getPackageName()));
+                    BitmapDrawable bmpDraw = (BitmapDrawable)drawable;
+                    bitmap = bmpDraw.getBitmap();
+                    photo.setScaleX( 0.4f );
+                    photo.setScaleY( 0.4f );
+                    photo.setEnabled( false );
+                }
+                photo.setImageBitmap( bitmap );
+                progressBar.setVisibility(View.GONE);
+                photo.setVisibility(View.VISIBLE);
+            }
+        }
+
+        public View getCurrentView(){
+            return currentView;
         }
 
         @Override
@@ -226,26 +236,15 @@ public class PhotoMultipleActivity extends Activity {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            View itemView = mLayoutInflater.inflate(
+            itemView = mLayoutInflater.inflate(
                     getApplication().getResources().getIdentifier("activity_photo", "layout", getApplication().getPackageName()),
                     container, false);
             findViews(itemView);
-            Log.e("PhotoMulitple", "instantiateItem----");
+            itemView.setTag( position );
             try {
                 Log.e("PhotoMulitple", "position----" + position);
                 if (jsonArray != null && jsonArray.length() > 0) {
-                    if (positile.get( position )){
-                        Bitmap bitmap =  bitmapList.get(String.valueOf( position ));
-                        photo.setImageBitmap(bitmap);
-                        photo.setVisibility(View.VISIBLE);
-                    }
-                    mAttacher.update();
-                    String actTitle = jsonArray.optJSONObject(position).optString("title");
-                    if (!actTitle.equals("")) {
-                        Spannable sp = new SpannableString(actTitle);
-                        sp.setSpan(new AbsoluteSizeSpan(18,true),0,actTitle.length(),Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                        titleTxt.setText(sp);
-                    }
+                    Log.d( TAG, "instantiateItem:的TAG " +itemView.getTag());
                     container.addView(itemView);
                 }
             } catch (Exception e) {
