@@ -5,6 +5,13 @@
     android:background="#000000"
     tools:context=".PhotoActivity" >
 
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center" />
+
     <ImageView
         android:id="@+id/photoView"
         android:layout_width="fill_parent"
@@ -22,58 +29,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:background="#50000000"
+            android:background="#00000000"
             android:orientation="horizontal"
             tools:ignore="UselessParent">
 
             <TextView
-                android:id="@+id/titleTxt"
+                android:id="@+id/titleTxts"
                 android:layout_width="235dp"
-                android:layout_height="40dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical|center_horizontal"
                 android:text=""
+                android:shadowColor="#000000"
+                android:background="#00000000"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/primary_text_dark" />
+
         </LinearLayout>
     </FrameLayout>
 
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
-
-            <LinearLayout
-                android:id="@+id/viewGroup1"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_marginBottom="0dp"
-                android:background="#00000000"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal" >
-
-                <TextView
-                    android:id="@+id/account"
-                    android:layout_width="324dp"
-                    android:layout_height="56dp"
-                    android:background="#00000000"
-                    android:letterSpacing="0.04"
-                    android:lineSpacingMultiplier="1.25"
-                    android:shadowColor="#000000"
-                    android:shadowDx="1"
-                    android:shadowDy="1"
-                    android:shadowRadius="5"
-                    android:text=""
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp" />
-            </LinearLayout>
-        </RelativeLayout>
-    </LinearLayout>
 </FrameLayout>
