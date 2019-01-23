@@ -1,6 +1,5 @@
 package com.Hongleilibs.PhotoViewer;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -8,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -37,7 +37,9 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
 
@@ -101,17 +103,21 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
     /**
      * Find and Connect Views
      */
-    private void findViews(View itemView) {
+    private Map<String, Object> findViews(View itemView) {
+        Map<String, Object> map = new HashMap<String, Object>();
+
         // Photo Container
         photo = (ImageView) itemView.findViewById( getApplication().getResources().getIdentifier( "photoView", "id", getApplication().getPackageName() ) );
-
+        map.put( "photo",photo );
         mAttacher = new PhotoViewAttacher( photo );
 
         progressBar = (ProgressBar) itemView.findViewById( getApplication().getResources().getIdentifier( "progressBar1", "id", getApplication().getPackageName() ) );
+        map.put( "progressBar",progressBar );
         //Account TextView
         account = (TextView) itemView.findViewById( getApplication().getResources().getIdentifier( "account", "id", getApplication().getPackageName() ) );
         // Title TextView
         titleTxt = (TextView) itemView.findViewById( getApplication().getResources().getIdentifier( "titleTxt", "id", getApplication().getPackageName() ) );
+        return map;
     }
 
     private void findViews() {
@@ -195,7 +201,6 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
         int activityPhotoId;
         private View currentView;
         private int lastPosition = -1;
-        List<Integer> bitmapList = new ArrayList<>();
         private Handler handler;
 
         public CustomPagerAdapter(Context context, int activityPhotoId) {
@@ -206,41 +211,47 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
         @Override
         public void setPrimaryItem(View container, int position, Object object) {
             Log.d( TAG, "setPrimaryItem: " + position );
+
             if (lastPosition != position) {
                 lastPosition = position;
                 currentView = (View) object;
                 findViews( currentView );
-                //在主线程中实例化Handler　　
-                handler = new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        super.handleMessage( msg );
-                        synchronized ( this ){
-                            progressBar.setVisibility( View.GONE );
-                        }
-                        photo.setVisibility( View.VISIBLE );
-                    }
-                };
-                bitmapList.add( position );
-                Bitmap bitmap = getImageBitmap( jsonArray.optJSONObject( position ).optString( "url" ) );
+                new asyncTask().executeOnExecutor( AsyncTask.THREAD_POOL_EXECUTOR ,jsonArray.optJSONObject( position ).optString( "url" ) ,currentView);
+            };
+        }
+
+        private class asyncTask extends AsyncTask<Object,Object,Bitmap> {
+            private ImageView ImageView;
+            private ProgressBar progressBar2;
+
+            @Override
+            protected Bitmap doInBackground(Object... strings) {
+                View view = (View) strings[1];
+                Bitmap bitmap = getImageBitmap( strings[0].toString() );
+                publishProgress(bitmap,view);
+                return bitmap;
+            }
+
+            @Override
+            protected void onProgressUpdate(Object... values) {
+                super.onProgressUpdate(values);
+                View view = (View) values[1];
+                Map Image = findViews( view );
+                ImageView =  (ImageView)Image.get( "photo" );
+                progressBar2 =  (ProgressBar)Image.get( "progressBar" );
+                Bitmap bitmap = (Bitmap)values[0];
+                progressBar2.setVisibility( View.GONE );
                 if (bitmap == null) {
                     Drawable drawable = getResources().getDrawable( getApplication().getResources().getIdentifier( "image_failed", "drawable", getApplication().getPackageName() ) );
                     BitmapDrawable bmpDraw = (BitmapDrawable) drawable;
                     bitmap = bmpDraw.getBitmap();
-                    photo.setScaleX( 0.4f );
-                    photo.setScaleY( 0.4f );
-                    photo.setEnabled( false );
+                    ImageView.setScaleX( 0.4f );
+                    ImageView.setScaleY( 0.4f );
+                    ImageView.setEnabled( false );
                 }
-                //给Handler发消息
-                Message ok = new Message();
-                handler.sendMessage( ok );
-                photo.setImageBitmap( bitmap );
+                ImageView.setImageBitmap( bitmap );
+                ImageView.invalidate();
             }
-        }
-
-
-        public View getCurrentView() {
-            return currentView;
         }
 
         @Override
