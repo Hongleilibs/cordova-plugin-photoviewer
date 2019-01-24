@@ -10,8 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.os.StrictMode;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -59,7 +57,6 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
     private static int select_position = 0;
     static CustomPagerAdapter mCustomPagerAdapter;
     private boolean share = false;
-    List<Bitmap> bitmapList = new ArrayList<>();
     String TAG = "PhotoMultipleActivity";
 
     @Override
@@ -132,8 +129,6 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
             } else {
                 view_pager.setCurrentItem( current_position );
             }
-
-            //把当前位置放在一个可靠的位置，如果从0开始的话，一开始就不能向左滑动了
         }
     }
 
@@ -185,11 +180,9 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
             conn.connect();
             InputStream is = conn.getInputStream();
             bitmap = BitmapFactory.decodeStream( is );
-            bitmapList.add( bitmap );
             is.close();
         } catch (Exception e) {
             bitmap = null;
-            bitmapList.add( bitmap );
             e.printStackTrace();
         }
         return bitmap;
@@ -202,6 +195,7 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
         private View currentView;
         private int lastPosition = -1;
         private Handler handler;
+        int i = 0;
 
         public CustomPagerAdapter(Context context, int activityPhotoId) {
             mContext = context;
@@ -211,8 +205,9 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
         @Override
         public void setPrimaryItem(View container, int position, Object object) {
             Log.d( TAG, "setPrimaryItem: " + position );
-
             if (lastPosition != position) {
+                ++i;
+                System.out.println("图片浏览次数："+i);
                 lastPosition = position;
                 currentView = (View) object;
                 findViews( currentView );
@@ -270,11 +265,9 @@ public class PhotoMultipleActivity extends Activity implements OnPageChangeListe
                     getApplication().getResources().getIdentifier( "activity_photo", "layout", getApplication().getPackageName() ),
                     container, false );
             findViews( itemView );
-            itemView.setTag( position );
             try {
                 Log.e( "PhotoMulitple", "position----" + position );
                 if (jsonArray != null && jsonArray.length() > 0) {
-                    Log.d( TAG, "instantiateItem:的TAG " + itemView.getTag() );
                     container.addView( itemView );
                 }
             } catch (Exception e) {
